@@ -1,0 +1,16 @@
+Class
+TopSecret
+--------------
+-decipher(String. String): String
+
+decipher method maps the first char of first line to second char of second line
+
+
+Class
+CipherTest
+--------------
+-check for different lengths of key
+-check for other values (*&^%$#)
+
+
+
