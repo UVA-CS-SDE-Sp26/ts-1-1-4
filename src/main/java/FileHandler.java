@@ -4,7 +4,8 @@ import java.util.Scanner;
 
 public class FileHandler {
 
-    public String data;
+    public String data = "";
+
 
     public void readFile() {
         File chosenFile = new File("data/filea.txt");
