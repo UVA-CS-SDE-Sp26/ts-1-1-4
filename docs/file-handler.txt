@@ -1,0 +1,15 @@
+Receive request for file
+
+
+checkFile(){
+    if request is a valid file,
+    findFileContents 
+}
+
+Function to run when request received:
+findFileContents(){
+    open file
+    throw error is file is invalid
+    convert file to a string
+    return string
+}

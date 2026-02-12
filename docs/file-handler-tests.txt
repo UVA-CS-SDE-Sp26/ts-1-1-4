@@ -1,0 +1,14 @@
+TEST 1
+Determine if the file requested is a valid file.
+Input: filea.txt
+Expected Output: valid
+Input: fileb.txt
+Expected Output: valid
+Input: text.txt
+Expected Output: invalid
+
+TEST 2
+Make sure a string is returned from the file.
+Input: filea.txt
+Expected Output: string
+
