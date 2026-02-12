@@ -1,0 +1,78 @@
+CIPHER MODULE DOCUMENTATION
+Team Member D - Ciphering Feature
+
+OVERVIEW:
+The cipher module is responsible for deciphering encrypted text files using a substitution cipher.
+The cipher key is stored in a file and must be validated before use.
+
+CIPHER KEY FILE STRUCTURE:
+- Location: ciphers/key.txt (in project root)
+- Format: Two lines of equal length
+  * Line 1: Original character set (in order)
+  * Line 2: Cipher substitutions (corresponding encrypted characters)
+- Example (Caesar shift cipher with alphanumerics):
+  abcdefghijklmnopqurstuvwxyzABCDEFGHIJKLMNOPQURSTUVWXYZ1234567890
+  bcdefghijklmnopqurstuvwxyzABCDEFGHIJKLMNOPQURSTUVWXYZ1234567890a
+
+CIPHER LOGIC:
+- Substitution cipher: Each character in line 1 maps to the corresponding character in line 2
+- Deciphering reverses this mapping (cipher char → actual char)
+- In the example above, this is a Caesar shift where:
+  * lowercase 'a' encrypts to 'b', 'b' to 'c', ..., 'z' to 'A'
+  * uppercase 'A' encrypts to 'B', 'B' to 'C', ..., 'Z' to '1'
+  * digit '0' encrypts to 'a', creating a wraparound effect
+- Characters not in the key remain unchanged (spaces, punctuation)
+
+KEY VALIDATION:
+The cipher key must be validated to ensure it is usable:
+1. File must exist and be readable
+2. File must contain exactly 2 lines
+3. Both lines must have the same length
+4. Both lines should contain only unique characters (no duplicates in each line)
+5. If validation fails, an appropriate error message is thrown
+
+CLASS DESIGN:
+Class: Cipher
+- Constructor: Cipher(String keyFilePath)
+  * Loads and validates the cipher key from the specified file path
+  * Throws IllegalArgumentException if validation fails
+  
+- Method: String decipher(String cipheredText)
+  * Takes encrypted text as input
+  * Returns decrypted text using the loaded cipher key
+  * Only deciphers characters present in the cipher key
+  * Characters not in key remain unchanged (e.g., spaces, special punctuation)
+
+INTERFACE WITH OTHER MODULES:
+- Called by: Team Member C (Program Control)
+- Input: Encrypted text string from file contents
+- Output: Decrypted text string ready for display
+- Default key path: "ciphers/key.txt"
+- Alternative key: Can be specified via command line parameter
+
+ERROR HANDLING:
+- FileNotFoundException: If key file doesn't exist
+- IllegalArgumentException: If key format is invalid
+- Detailed error messages help diagnose issues
+
+TESTING STRATEGY:
+Unit tests cover:
+1. Valid cipher key loading
+2. Key validation (equal length, unique characters, exactly 2 lines)
+3. Deciphering with lowercase letters
+4. Deciphering with uppercase letters
+5. Deciphering with digits
+6. Deciphering with mixed alphanumeric content
+7. Preserving characters not in cipher key (spaces, punctuation)
+8. Deciphering empty strings
+9. Invalid key file formats
+10. Missing key files
+11. Alternative key file paths
+12. Caesar shift wraparound behavior
+
+DESIGN DECISIONS:
+- Immutable cipher mapping once loaded (thread-safe)
+- Supports any length cipher key (not limited to 26 letters)
+- Fast lookup using HashMap for O(1) decryption per character
+- Defensive validation to prevent runtime errors with malformed keys
+- Flexible character set support (letters, numbers, any printable characters)
