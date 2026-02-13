@@ -7,8 +7,8 @@ public class FileHandler {
     public String data = "";
 
 
-    public void readFile() {
-        File chosenFile = new File("data/filea.txt");
+    public void readFile(String directory) {
+        File chosenFile = new File(directory);
 
         try (Scanner fileReader = new Scanner(chosenFile)) {
             while (fileReader.hasNextLine()) {
