@@ -8,7 +8,7 @@ Input: text.txt
 Expected Output: invalid
 
 TEST 2
-Make sure a string is returned from the file.
-Input: filea.txt
-Expected Output: string
+Make sure the content read from the file is the correct content.
+Input: the content read == the content in filea.txt
+Expected Output: Content is correct
 

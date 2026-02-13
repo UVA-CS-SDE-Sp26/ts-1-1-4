@@ -1,15 +1,17 @@
-Receive request for file
-
-
-checkFile(){
-    if request is a valid file,
-    findFileContents 
-}
+The file handler takes an input from the command line which is then used to
+select a file and read it line by line. This information can then be retrieved
+by any branch using getData which returns the data which has been read.
 
 Function to run when request received:
-findFileContents(){
-    open file
-    throw error is file is invalid
-    convert file to a string
-    return string
+readFile(){
+    if request is a valid file,
+        read file contents line by line
+    else
+        throw an error or message saying the file doesn't exist
+}
+
+Returns whatever is in data, the variable that will contain whatever is
+read in the file.
+getData() {
+    return data
 }
