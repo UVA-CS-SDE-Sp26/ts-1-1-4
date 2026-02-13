@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("application")
 }
 
 group = "org.example"
@@ -7,6 +8,14 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+application {
+    // If TopSecret.java has NO `package ...` line:
+    mainClass.set("TopSecret")
+
+    // If it DOES have a package line, use:
+    // mainClass.set("your.package.TopSecret")
 }
 
 dependencies {

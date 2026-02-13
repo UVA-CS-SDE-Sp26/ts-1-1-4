@@ -19,7 +19,5 @@ public class TopSecret {
         // Create the CLI and run it (Member A's responsibility)
         CommandLineInterface cli = new CommandLineInterface(controller);
         cli.run(args);
-
-        FileHandler fileHandler = new FileHandler();
     }
 }
