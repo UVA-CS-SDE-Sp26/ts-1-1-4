@@ -1,0 +1,37 @@
+FILE HANDLER DOCUMENTATION
+Team Member B - File Handler
+
+PURPOSE
+Handles all file access from data/ directory. No other component should directly access files.
+
+RESPONSIBILITIES
+- List files in data/ directory (sorted alphabetically)
+- Read file contents from data/ directory
+- Validate filenames to prevent path traversal attacks
+- Handle file system errors
+
+METHODS
+listDataFiles()
+  - Returns sorted list of filenames from data/ directory
+  - Throws RuntimeException if directory missing or unreadable
+
+readDataFile(String filename)
+  - Reads file contents, preserves line breaks
+  - Validates filename (rejects null, empty, paths with /, \, or ..)
+  - Throws IllegalArgumentException for invalid filenames
+  - Throws RuntimeException if file not found
+
+SECURITY
+- Prevents path traversal: rejects filenames containing "/", "\", or ".."
+- Only accepts simple filenames (no directory components)
+- All file access restricted to data/ directory
+
+ERROR HANDLING
+- Data directory not found: RuntimeException
+- Invalid filename: IllegalArgumentException
+- File not found: RuntimeException
+- File read error: RuntimeException
+
+INTERFACE
+Called by: ProgramController
+Calls: Java File API, Scanner

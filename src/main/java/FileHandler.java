@@ -5,31 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Team Member B
- * All direct file access lives here.
- *
- * Responsibilities:
- * - List files in the /data directory
- * - Read a specific file from /data
- *
- * Notes:
- * - Does NOT print to console (lets CLI handle messaging)
- * - Throws RuntimeException so ProgramController/CLI can handle gracefully
- */
+// Handles all file access from data/ directory
 public class FileHandler {
-
     private static final String DATA_DIR = "data";
 
-    /**
-     * Lists all regular files in the data/ directory, sorted by filename.
-     *
-     * @return sorted list of filenames
-     * @throws RuntimeException if data directory is missing or unreadable
-     */
+    // Returns sorted list of all files in data/ directory
     public List<String> listDataFiles() {
         File dir = new File(DATA_DIR);
-
         if (!dir.exists() || !dir.isDirectory()) {
             throw new RuntimeException("Data directory not found: " + DATA_DIR);
         }
@@ -50,20 +32,13 @@ public class FileHandler {
         return names;
     }
 
-    /**
-     * Reads a file from the data/ directory and returns its raw contents.
-     *
-     * @param filename name like "filea.txt"
-     * @return file contents with trailing newlines preserved line-by-line
-     * @throws IllegalArgumentException if filename is null/blank or unsafe
-     * @throws RuntimeException if the file does not exist or cannot be read
-     */
+    // Reads file contents, validates filename to prevent path traversal
     public String readDataFile(String filename) {
         if (filename == null || filename.trim().isEmpty()) {
             throw new IllegalArgumentException("Filename cannot be empty.");
         }
 
-        // Prevent path traversal like "../secret.txt" or "data/filea.txt"
+        // Prevent path traversal attacks
         if (filename.contains("/") || filename.contains("\\") || filename.contains("..")) {
             throw new IllegalArgumentException("Invalid filename: " + filename);
         }
@@ -79,7 +54,6 @@ public class FileHandler {
                 sb.append(fileReader.nextLine()).append("\n");
             }
         } catch (FileNotFoundException e) {
-            // Should be rare since we check exists(), but keep it safe.
             throw new RuntimeException("Unable to open file: " + filename, e);
         }
 

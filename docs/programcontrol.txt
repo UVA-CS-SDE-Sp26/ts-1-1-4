@@ -1,0 +1,44 @@
+PROGRAM CONTROL DOCUMENTATION
+Team Member C - Program Controller
+
+PURPOSE
+Coordinates FileHandler and Cipher to process file requests from CLI.
+
+RESPONSIBILITIES
+- Format file list with numbered prefixes (01, 02, etc.)
+- Validate and parse file numbers
+- Retrieve file contents via FileHandler
+- Decipher file contents via Cipher
+- Handle errors from FileHandler and Cipher
+
+METHODS
+listFiles()
+  - Gets file list from FileHandler
+  - Formats with two-digit numbers (01, 02, etc.)
+  - Returns formatted string
+
+getFileContents(String fileNumber)
+  - Uses default key (ciphers/key.txt)
+  - Delegates to getFileContents(fileNumber, DEFAULT_KEY_PATH)
+
+getFileContents(String fileNumber, String keyPath)
+  - Parses file number to index
+  - Gets filename from FileHandler list
+  - Reads raw content from FileHandler
+  - Deciphers with Cipher using specified key
+  - Returns deciphered content
+
+parseFileNumberToIndex(String fileNumber)
+  - Converts "01" or "1" to 0-based index
+  - Validates number format and range
+  - Throws RuntimeException for invalid input
+
+ERROR HANDLING
+- Invalid file number: RuntimeException
+- File number out of range: RuntimeException
+- FileHandler errors: Wrapped in RuntimeException
+- Cipher errors: Wrapped in RuntimeException with descriptive messages
+
+INTERFACE
+Called by: CommandLineInterface
+Calls: FileHandler, Cipher

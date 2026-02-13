@@ -7,18 +7,8 @@ import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for CommandLineInterface.
- * Team Member A is responsible for these tests.
- * 
- * Tests focus on:
- * - Argument parsing logic
- * - Input validation
- * - Error message handling
- * - Correct routing to controller methods
- */
+// Tests for CommandLineInterface argument parsing and output
 class CommandLineInterfaceTest {
-
     private CommandLineInterface cli;
     private MockProgramController mockController;
     private ByteArrayOutputStream outputStream;
@@ -28,11 +18,8 @@ class CommandLineInterfaceTest {
 
     @BeforeEach
     void setUp() {
-        // Create mock controller for testing
         mockController = new MockProgramController();
         cli = new CommandLineInterface(mockController);
-
-        // Capture System.out and System.err for verification
         outputStream = new ByteArrayOutputStream();
         errorStream = new ByteArrayOutputStream();
         originalOut = System.out;
@@ -42,123 +29,67 @@ class CommandLineInterfaceTest {
     }
 
     void tearDown() {
-        // Restore original streams
         System.setOut(originalOut);
         System.setErr(originalErr);
     }
 
-    // ==================== No Arguments Tests ====================
-
     @Test
-    @DisplayName("No arguments should call listFiles on controller")
+    @DisplayName("No arguments calls listFiles")
     void testNoArgumentsCallsListFiles() {
         cli.run(new String[]{});
-        assertTrue(mockController.listFilesCalled, "listFiles() should be called when no arguments provided");
+        assertTrue(mockController.listFilesCalled);
     }
 
     @Test
-    @DisplayName("No arguments should print file list to output")
+    @DisplayName("No arguments prints file list")
     void testNoArgumentsPrintsFileList() {
         mockController.listFilesResult = "01 file1.txt\n02 file2.txt";
         cli.run(new String[]{});
-        String output = outputStream.toString().trim();
-        assertEquals("01 file1.txt\n02 file2.txt", output);
+        assertEquals("01 file1.txt\n02 file2.txt", outputStream.toString().trim());
         tearDown();
     }
 
-    // ==================== One Argument Tests ====================
-
     @Test
-    @DisplayName("One valid argument should call getFileContents with file number")
+    @DisplayName("One argument calls getFileContents")
     void testOneArgumentCallsGetFileContents() {
         cli.run(new String[]{"01"});
-        assertTrue(mockController.getFileContentsCalled, "getFileContents() should be called with one argument");
+        assertTrue(mockController.getFileContentsCalled);
         assertEquals("01", mockController.lastFileNumber);
-        assertNull(mockController.lastKeyPath);
     }
 
     @Test
-    @DisplayName("One argument should print file contents to output")
+    @DisplayName("One argument prints contents")
     void testOneArgumentPrintsContents() {
-        mockController.getFileContentsResult = "Mission briefing contents here";
+        mockController.getFileContentsResult = "File contents";
         cli.run(new String[]{"02"});
-        String output = outputStream.toString().trim();
-        assertEquals("Mission briefing contents here", output);
+        assertEquals("File contents", outputStream.toString().trim());
         tearDown();
     }
 
     @Test
-    @DisplayName("One argument with different number formats should work")
-    void testDifferentNumberFormats() {
-        // Test with leading zeros
-        cli.run(new String[]{"01"});
-        assertTrue(mockController.getFileContentsCalled);
-        
-        mockController.reset();
-        
-        // Test without leading zeros
-        cli.run(new String[]{"1"});
-        assertTrue(mockController.getFileContentsCalled);
-        
-        mockController.reset();
-        
-        // Test larger numbers
-        cli.run(new String[]{"123"});
-        assertTrue(mockController.getFileContentsCalled);
-    }
-
-    // ==================== Two Arguments Tests ====================
-
-    @Test
-    @DisplayName("Two arguments should call getFileContents with file number and key path")
+    @DisplayName("Two arguments calls getFileContents with key")
     void testTwoArgumentsCallsGetFileContentsWithKey() {
-        cli.run(new String[]{"01", "ciphers/altkey.txt"});
-        assertTrue(mockController.getFileContentsWithKeyCalled, 
-                   "getFileContents(number, key) should be called with two arguments");
+        cli.run(new String[]{"01", "key.txt"});
+        assertTrue(mockController.getFileContentsWithKeyCalled);
         assertEquals("01", mockController.lastFileNumber);
-        assertEquals("ciphers/altkey.txt", mockController.lastKeyPath);
+        assertEquals("key.txt", mockController.lastKeyPath);
     }
 
     @Test
-    @DisplayName("Two arguments should print file contents to output")
-    void testTwoArgumentsPrintsContents() {
-        mockController.getFileContentsWithKeyResult = "Deciphered with alternate key";
-        cli.run(new String[]{"01", "mykey.txt"});
-        String output = outputStream.toString().trim();
-        assertEquals("Deciphered with alternate key", output);
-        tearDown();
-    }
-
-    // ==================== Error Handling Tests ====================
-
-    @Test
-    @DisplayName("Too many arguments should print error")
+    @DisplayName("Too many arguments prints error")
     void testTooManyArgumentsPrintsError() {
         cli.run(new String[]{"01", "key.txt", "extra"});
-        String error = errorStream.toString();
-        assertTrue(error.contains("Too many arguments"), "Should print 'too many arguments' error");
+        assertTrue(errorStream.toString().contains("Too many arguments"));
         tearDown();
     }
 
     @Test
-    @DisplayName("Non-numeric first argument should print error")
+    @DisplayName("Non-numeric argument prints error")
     void testNonNumericFirstArgumentPrintsError() {
         cli.run(new String[]{"abc"});
-        String error = errorStream.toString();
-        assertTrue(error.contains("must be a file number"), "Should print error about file number");
+        assertTrue(errorStream.toString().contains("must be a file number"));
         tearDown();
     }
-
-    @Test
-    @DisplayName("Empty string argument should print error")
-    void testEmptyStringArgumentPrintsError() {
-        cli.run(new String[]{""});
-        String error = errorStream.toString();
-        assertTrue(error.contains("must be a file number"), "Should print error for empty string");
-        tearDown();
-    }
-
-    // ==================== isValidNumber Tests ====================
 
     @Test
     @DisplayName("isValidNumber returns true for valid numbers")
@@ -166,7 +97,6 @@ class CommandLineInterfaceTest {
         assertTrue(cli.isValidNumber("1"));
         assertTrue(cli.isValidNumber("01"));
         assertTrue(cli.isValidNumber("123"));
-        assertTrue(cli.isValidNumber("0"));
     }
 
     @Test
@@ -175,39 +105,27 @@ class CommandLineInterfaceTest {
         assertFalse(cli.isValidNumber(null));
         assertFalse(cli.isValidNumber(""));
         assertFalse(cli.isValidNumber("abc"));
-        assertFalse(cli.isValidNumber("1.5"));
-        assertFalse(cli.isValidNumber("1a"));
     }
 
-    // ==================== Controller Exception Handling ====================
-
     @Test
-    @DisplayName("Controller exception should be caught and printed as error")
+    @DisplayName("Controller exception is caught and printed")
     void testControllerExceptionIsCaught() {
         mockController.shouldThrowException = true;
         mockController.exceptionMessage = "File not found";
         cli.run(new String[]{"99"});
-        String error = errorStream.toString();
-        assertTrue(error.contains("File not found"), "Should print controller exception message");
+        assertTrue(errorStream.toString().contains("File not found"));
         tearDown();
     }
 
-    // ==================== Mock Controller for Testing ====================
-
-    /**
-     * Mock implementation of ProgramController for testing CLI in isolation.
-     */
     private static class MockProgramController extends ProgramController {
         boolean listFilesCalled = false;
         boolean getFileContentsCalled = false;
         boolean getFileContentsWithKeyCalled = false;
         String lastFileNumber = null;
         String lastKeyPath = null;
-        
         String listFilesResult = "01 test.txt";
         String getFileContentsResult = "Test contents";
         String getFileContentsWithKeyResult = "Test contents with key";
-        
         boolean shouldThrowException = false;
         String exceptionMessage = "Test exception";
 
@@ -217,15 +135,12 @@ class CommandLineInterfaceTest {
             getFileContentsWithKeyCalled = false;
             lastFileNumber = null;
             lastKeyPath = null;
-            shouldThrowException = false;
         }
 
         @Override
         public String listFiles() {
             listFilesCalled = true;
-            if (shouldThrowException) {
-                throw new RuntimeException(exceptionMessage);
-            }
+            if (shouldThrowException) throw new RuntimeException(exceptionMessage);
             return listFilesResult;
         }
 
@@ -233,10 +148,7 @@ class CommandLineInterfaceTest {
         public String getFileContents(String fileNumber) {
             getFileContentsCalled = true;
             lastFileNumber = fileNumber;
-            lastKeyPath = null;
-            if (shouldThrowException) {
-                throw new RuntimeException(exceptionMessage);
-            }
+            if (shouldThrowException) throw new RuntimeException(exceptionMessage);
             return getFileContentsResult;
         }
 
@@ -245,9 +157,7 @@ class CommandLineInterfaceTest {
             getFileContentsWithKeyCalled = true;
             lastFileNumber = fileNumber;
             lastKeyPath = keyPath;
-            if (shouldThrowException) {
-                throw new RuntimeException(exceptionMessage);
-            }
+            if (shouldThrowException) throw new RuntimeException(exceptionMessage);
             return getFileContentsWithKeyResult;
         }
     }

@@ -1,270 +1,33 @@
-================================================================================
-                         USER INTERFACE DOCUMENTATION
-                              TopSecret Utility
-================================================================================
+USER INTERFACE DOCUMENTATION
+Team Member A - Command Line Interface
 
 PURPOSE
--------
-This document describes how users interact with the TopSecret command-line 
-utility. The program allows agents to view mission data files stored in the 
-data folder. Files may be ciphered and require deciphering using a key file.
+The CLI parses command line arguments and displays output to the user.
 
---------------------------------------------------------------------------------
-SYSTEM DIAGRAM (CLI Role)
---------------------------------------------------------------------------------
-
-The CLI is the entry point that receives user input and displays output.
-Here is how the components connect:
-
-    +------------------+
-    |      User        |
-    +--------+---------+
-             |
-             | (command line arguments)
-             v
-    +------------------+
-    | TopSecret.main() |  <-- Entry point
-    +--------+---------+
-             |
-             v
-    +------------------+
-    |    CLI Layer     |  <-- Member A (this component)
-    | (CommandLine     |
-    |   Interface)     |
-    +--------+---------+
-             |
-             | listFiles() / getFileContents(num) / getFileContents(num, key)
-             v
-    +------------------+
-    | Program Control  |  <-- Member C
-    | (ProgramControl) |
-    +--------+---------+
-             |
-             +-------------------+
-             |                   |
-             v                   v
-    +------------------+   +------------------+
-    |   File Handler   |   |     Cipher       |  <-- Member D
-    |   (Member B)     |   | (CipherService)  |
-    +------------------+   +------------------+
-             |                   |
-             v                   v
-    +------------------+   +------------------+
-    |   data/ folder   |   | ciphers/key.txt  |
-    +------------------+   +------------------+
-
-Flow:
-1. User runs: java topsecret [args]
-2. CLI parses arguments and validates input
-3. CLI calls appropriate ProgramController method
-4. ProgramController coordinates FileHandler and Cipher
-5. Result returns to CLI
-6. CLI prints output (or error) and program exits
-
---------------------------------------------------------------------------------
 USAGE
---------------------------------------------------------------------------------
+  java topsecret                    - List available files
+  java topsecret [number]           - Display file contents (default key)
+  java topsecret [number] [keyfile] - Display file contents (custom key)
 
-The program is run from the command line using:
+EXAMPLES
+  java topsecret
+    Output: 01 filea.txt
+            02 fileb.txt
 
-    java topsecret [file_number] [key_file]
+  java topsecret 01
+    Output: [Deciphered contents of filea.txt]
 
-Arguments:
-    file_number  (optional)  The number of the file to display (e.g., 01, 02)
-    key_file     (optional)  Path to an alternate cipher key file
+  java topsecret 01 ciphers/altkey.txt
+    Output: [Contents deciphered with alternate key]
 
---------------------------------------------------------------------------------
-COMMANDS AND EXAMPLES
---------------------------------------------------------------------------------
-
-1. LIST ALL AVAILABLE FILES
-   -------------------------
-   Command:    java topsecret
-   
-   Description: When run with no arguments, the program displays a numbered 
-                list of all files available in the data folder.
-   
-   Example Output:
-       01 mission_alpha.txt
-       02 mission_bravo.txt
-       03 contacts.txt
-
-2. DISPLAY A SPECIFIC FILE
-   ------------------------
-   Command:    java topsecret 01
-   
-   Description: When run with a file number, the program displays the contents
-                of the corresponding file. The file is deciphered using the 
-                default key (ciphers/key.txt).
-   
-   Example Output:
-       [Contents of mission_alpha.txt are displayed here]
-
-3. DISPLAY FILE WITH ALTERNATE KEY
-   --------------------------------
-   Command:    java topsecret 01 ciphers/alternate_key.txt
-   
-   Description: When run with a file number and a key file path, the program 
-                displays the file contents deciphered using the specified key.
-   
-   Example Output:
-       [Contents of mission_alpha.txt deciphered with alternate key]
-
---------------------------------------------------------------------------------
 ERROR HANDLING
---------------------------------------------------------------------------------
+- Invalid file number: "Error: First argument must be a file number."
+- Too many arguments: "Error: Too many arguments. Usage: java topsecret [number] [keyfile]"
+- File not found: "Error: File number out of range: XX"
+- Key file errors: Errors from ProgramController are displayed
 
-The program will display an error message and exit in the following cases:
-
-1. INVALID FILE NUMBER
-   Error:    "Error: Invalid file number. Please enter a valid number."
-   Cause:    The file number provided does not match any available file.
-   Example:  java topsecret 99  (when only 3 files exist)
-
-2. FILE NOT FOUND
-   Error:    "Error: File not found."
-   Cause:    The requested file does not exist in the data folder.
-
-3. KEY FILE NOT FOUND
-   Error:    "Error: Key file not found at specified path."
-   Cause:    The alternate key file path provided does not exist.
-
-4. INVALID KEY FILE
-   Error:    "Error: Invalid key file format."
-   Cause:    The key file does not have the correct two-line format.
-
-5. TOO MANY ARGUMENTS
-   Error:    "Error: Too many arguments. Usage: java topsecret [number] [keyfile]"
-   Cause:    More than two arguments were provided.
-
-6. INVALID ARGUMENT FORMAT
-   Error:    "Error: First argument must be a file number."
-   Cause:    The first argument is not a valid number.
-
---------------------------------------------------------------------------------
-EXIT BEHAVIOR
---------------------------------------------------------------------------------
-
-The program exits immediately after:
-- Displaying the file list (no arguments)
-- Displaying file contents (valid file number)
-- Displaying an error message (any error condition)
-
-The program does NOT run continuously or prompt for additional input.
-
---------------------------------------------------------------------------------
-CLI CONTRACT (For Team Coordination)
---------------------------------------------------------------------------------
-
-Inputs:
-    - String[] args from main method
-    - args.length == 0: List files request
-    - args.length == 1: Display file request (args[0] = file number)
-    - args.length == 2: Display file with key (args[0] = number, args[1] = key)
-    - args.length > 2:  Error - too many arguments
-
-Outputs:
-    - Prints to System.out for normal output (file list, file contents)
-    - Prints to System.err for error messages
-    - Program terminates after output
-
-Interface with Program Controller (Member C):
-    - CLI calls controller.listFiles() for no-arg case
-    - CLI calls controller.getFileContents(fileNumber) for one-arg case
-    - CLI calls controller.getFileContents(fileNumber, keyPath) for two-arg case
-    - Controller returns String result or throws exception on error
-
---------------------------------------------------------------------------------
-CLI TEST PLAN (CommandLineInterfaceTest.java)
---------------------------------------------------------------------------------
-
-The following unit tests are designed for the CLI component. Tests use a mock
-ProgramController to isolate CLI logic from other components.
-
-TEST CATEGORY 1: No Arguments (java topsecret)
-----------------------------------------------
-  Test 1.1: testNoArgumentsCallsListFiles
-    Input:   args = []
-    Expects: controller.listFiles() is called
-    
-  Test 1.2: testNoArgumentsPrintsFileList
-    Input:   args = []
-    Expects: File list printed to System.out
-
-TEST CATEGORY 2: One Argument - Valid File Number (java topsecret 01)
----------------------------------------------------------------------
-  Test 2.1: testOneArgumentCallsGetFileContents
-    Input:   args = ["01"]
-    Expects: controller.getFileContents("01") is called
-    
-  Test 2.2: testOneArgumentPrintsContents
-    Input:   args = ["02"]
-    Expects: File contents printed to System.out
-    
-  Test 2.3: testDifferentNumberFormats
-    Input:   args = ["01"], ["1"], ["123"]
-    Expects: All valid number formats accepted
-
-TEST CATEGORY 3: One Argument - Invalid File Number
----------------------------------------------------
-  Test 3.1: testNonNumericFirstArgumentPrintsError
-    Input:   args = ["abc"]
-    Expects: Error message to System.err containing "must be a file number"
-    
-  Test 3.2: testEmptyStringArgumentPrintsError
-    Input:   args = [""]
-    Expects: Error message to System.err
-
-TEST CATEGORY 4: Two Arguments (java topsecret 01 keyfile.txt)
---------------------------------------------------------------
-  Test 4.1: testTwoArgumentsCallsGetFileContentsWithKey
-    Input:   args = ["01", "ciphers/altkey.txt"]
-    Expects: controller.getFileContents("01", "ciphers/altkey.txt") is called
-    
-  Test 4.2: testTwoArgumentsPrintsContents
-    Input:   args = ["01", "mykey.txt"]
-    Expects: File contents printed to System.out
-
-TEST CATEGORY 5: Bad/Unexpected Inputs
---------------------------------------
-  Test 5.1: testTooManyArgumentsPrintsError
-    Input:   args = ["01", "key.txt", "extra"]
-    Expects: Error message containing "Too many arguments"
-    
-  Test 5.2: testControllerExceptionIsCaught
-    Input:   args = ["99"] (controller throws exception)
-    Expects: Exception message printed to System.err
-
-TEST CATEGORY 6: isValidNumber Helper Method
---------------------------------------------
-  Test 6.1: testIsValidNumberWithValidNumbers
-    Input:   "1", "01", "123", "0"
-    Expects: Returns true for all
-    
-  Test 6.2: testIsValidNumberWithInvalidInputs
-    Input:   null, "", "abc", "1.5", "1a"
-    Expects: Returns false for all
-
---------------------------------------------------------------------------------
-EXAMPLE INVALID USAGES
---------------------------------------------------------------------------------
-
-1. NON-NUMERIC ARGUMENT
-   Command:    java topsecret abc
-   Output:     Error: First argument must be a file number.
-
-2. TOO MANY ARGUMENTS
-   Command:    java topsecret 01 key.txt extra argument
-   Output:     Error: Too many arguments. Usage: java topsecret [number] [keyfile]
-
-3. FILE NUMBER OUT OF RANGE
-   Command:    java topsecret 99
-   Output:     Error: Invalid file number. Please enter a valid number.
-
-4. MISSING KEY FILE
-   Command:    java topsecret 01 nonexistent_key.txt
-   Output:     Error: Key file not found at specified path.
-
-================================================================================
-                              END OF DOCUMENTATION
-================================================================================
+COMPONENT INTERFACE
+- Calls ProgramController.listFiles() for no arguments
+- Calls ProgramController.getFileContents(fileNumber) for one argument
+- Calls ProgramController.getFileContents(fileNumber, keyPath) for two arguments
+- Prints results to System.out, errors to System.err
